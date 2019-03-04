@@ -334,6 +334,7 @@ class LookupRotation(Reciprocal):
         # get classically precomputed eigenvalue binning
         approx_dict = LookupRotation._classic_approx(k, n, m,
                                                      negative_evals=neg_evals)
+        self._approx_dict = approx_dict #added for testing G
 
         fo = None
         old_fo = None
@@ -370,6 +371,8 @@ class LookupRotation(Reciprocal):
             # offset = start idx for ncx gate setting and unsetting m-bit
             # long bitstring
             offset_mpat = fo + (n - m) if fo < k - n else fo + n - m - 1
+            self._lambda_ar = []
+            
             for mainpat, subpat, lambda_ar in pattern_map:
                 # set m-bit pattern in register workq
                 self._set_bit_pattern(mainpat, self._workq[0], offset_mpat + 1)
@@ -394,7 +397,8 @@ class LookupRotation(Reciprocal):
                     self._set_bit_pattern(subpattern, self._anc[0], offset)
                 # uncompute m-bit pattern
                 self._set_bit_pattern(mainpat, self._workq[0], offset_mpat + 1)
-
+        
+            self._lambda_ar.append(lambda_ar) #added for testing G
         last_fo = fo
         # uncompute msq register
         if self._negative_evals:

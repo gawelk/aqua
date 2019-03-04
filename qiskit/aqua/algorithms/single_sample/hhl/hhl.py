@@ -145,7 +145,6 @@ class HHL(QuantumAlgorithm):
         eigs = get_pluggable_class(PluggableType.EIGENVALUES,
                                    eigs_params['name']).init_params(params, matrix)
         num_q, num_a = eigs.get_register_sizes()
-
         # Initialize initial state module
         tmpvec = vector
         init_state_params = params.get(Pluggable.SECTION_KEY_INITIAL_STATE)
@@ -205,7 +204,8 @@ class HHL(QuantumAlgorithm):
         self._ancilla_register = s
         self._circuit = qc
         return qc
-
+    
+    
     def _statevector_simulation(self):
         """The statevector simulation.
 
@@ -311,12 +311,14 @@ class HHL(QuantumAlgorithm):
         self._ret["solution_hhl"] = f1*vec*np.exp(-1j*f2)
 
     def _run(self):
+        
         if self._quantum_instance.is_statevector:
             self.construct_circuit(measurement=False)
             self._statevector_simulation()
         else:
-            self.construct_circuit(measurement=True)
+            self.construct_circuit(measurement=True)            
             self._state_tomography()
+
         # Adding a bit of general result information
         self._ret["input_matrix"] = self._matrix
         self._ret["input_vector"] = self._vector

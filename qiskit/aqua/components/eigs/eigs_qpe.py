@@ -228,7 +228,7 @@ class EigsQPE(Eigenvalues):
                                     expansion_order=self._expansion_order,
                                     evo_time=self._evo_time)
 
-        a = QuantumRegister(self._num_ancillae)
+        a = QuantumRegister(self._num_ancillae, 'k')
         q = register
 
         qc = pe.construct_circuit(state_register=q, ancillary_register=a)
