@@ -139,11 +139,7 @@ class EntryPopup(EntryCustom):
 class ComboboxPopup(ttk.Combobox):
 
     def __init__(self, controller, section_name, property_name, parent, **options):
-        self._orig_values = []
-        if 'values' in options:
-            self._orig_values = options['values']
-            options['values'] = ['' if v is None else str(v) for v in self._orig_values]
-
+        ''' If relwidth is set, then width is ignored '''
         super(ComboboxPopup, self).__init__(parent, **options)
         self._controller = controller
         self._section_name = section_name
@@ -156,27 +152,21 @@ class ComboboxPopup(ttk.Combobox):
 
     def _on_select(self, *ignore):
         new_text = self.get()
-        if self._text != new_text:
+        if len(new_text) > 0 and self._text != new_text:
             self._text = new_text
-            selected_index = self.current()
-            if selected_index >= 0:
-                new_text = self._orig_values[selected_index]
             self._controller.on_property_set(self._section_name,
                                              self._property_name,
                                              new_text)
 
     def _update_value(self, *ignore):
         new_text = self.get()
-        selected_index = self.current()
         state = self.state()
         combo_state = state[0] if isinstance(state, tuple) and len(state) > 0 else None
         if combo_state is None or combo_state != 'pressed':
             self.destroy()
 
-        if self._text != new_text:
+        if len(new_text) > 0 and self._text != new_text:
             self._text = new_text
-            if selected_index >= 0:
-                new_text = self._orig_values[selected_index]
             self._controller.on_property_set(self._section_name,
                                              self._property_name,
                                              new_text)

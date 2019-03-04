@@ -17,10 +17,8 @@
 """
 This module contains the definition of a base class for Oracle.
 """
-
-from abc import abstractmethod
-
 from qiskit.aqua import Pluggable
+from abc import abstractmethod
 
 
 class Oracle(Pluggable):
@@ -37,24 +35,14 @@ class Oracle(Pluggable):
     """
 
     @abstractmethod
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         super().__init__()
-        self._output_register = None
-        self._variable_register = None
-        self._ancillary_register = None
-        self._circuit = None
 
     @classmethod
     def init_params(cls, params):
         oracle_params = params.get(Pluggable.SECTION_KEY_ORACLE)
         args = {k: v for k, v in oracle_params.items() if k != 'name'}
         return cls(**args)
-
-    @property
-    def circuit(self):
-        if self._circuit is None:
-            self._circuit = self.construct_circuit()
-        return self._circuit
 
     @property
     @abstractmethod
@@ -68,7 +56,7 @@ class Oracle(Pluggable):
 
     @property
     @abstractmethod
-    def output_register(self):
+    def outcome_register(self):
         raise NotImplementedError()
 
     @abstractmethod
@@ -79,3 +67,7 @@ class Oracle(Pluggable):
             A quantum circuit for the oracle.
         """
         raise NotImplementedError()
+
+    @abstractmethod
+    def interpret_measurement(self, *args, **kwargs):
+        raise NotImplementedError

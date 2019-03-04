@@ -35,9 +35,7 @@ requirements = [
     "cvxopt",
     "setuptools>=40.5.0",
     "pyobjc-core; sys_platform == 'darwin'",
-    "pyobjc-framework-Cocoa; sys_platform == 'darwin'",
-    "dlx",
-    "pyeda"
+    "pyobjc-framework-Cocoa; sys_platform == 'darwin'"
 ]
 
 setuptools.setup(
@@ -63,7 +61,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering"
     ),
     keywords='qiskit sdk quantum aqua',
-    packages=setuptools.find_namespace_packages(exclude=['test*']),
+    packages=setuptools.find_packages(exclude=['test*']),
     install_requires=requirements,
     include_package_data=True,
     python_requires=">=3.5",

@@ -16,12 +16,15 @@
 # =============================================================================
 
 from .oracle import Oracle
-from .truth_table_oracle import TruthTableOracle
-from .logic_expr_oracle import LogicExpressionOracle
+from .sat import SAT
+from .simon_oracle import SimonOracle
+from .deutsch_jozsa_oracle import DeutschJozsaOracle
+from .bernstein_vazirani_oracle import BernsteinVaziraniOracle
 
 
-__all__ = [
-    'Oracle',
-    'TruthTableOracle',
-    'LogicExpressionOracle',
-]
+__all__ = ['Oracle',
+           'SAT',
+           'SimonOracle',
+           'DeutschJozsaOracle',
+           'BernsteinVaziraniOracle'
+          ]
