@@ -1,40 +1,39 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2018 IBM.
+# This code is part of Qiskit.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# (C) Copyright IBM 2018, 2019.
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# =============================================================================
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
 
 from collections import OrderedDict
 import importlib
 import logging
 from qiskit.providers import BaseBackend
+from qiskit.providers.basicaer import BasicAerProvider
+from qiskit.aqua import Preferences
+
+logger = logging.getLogger(__name__)
 
 try:
     from qiskit.providers.ibmq import IBMQProvider
     HAS_IBMQ = True
-except ImportError:
+except Exception as e:
     HAS_IBMQ = False
-    pass
+    logger.debug("IBMQProvider not loaded: '{}'".format(str(e)))
+
 try:
     from qiskit.providers.aer import AerProvider
     HAS_AER = True
-except ImportError:
+except Exception as e:
     HAS_AER = False
-    pass
-
-logger = logging.getLogger(__name__)
-
+    logger.debug("AerProvider not loaded: '{}'".format(str(e)))
 
 _UNSUPPORTED_BACKENDS = ['unitary_simulator', 'clifford_simulator']
 
@@ -53,10 +52,35 @@ def is_aer_provider(backend):
     Args:
         backend (BaseBackend): backend instance
     Returns:
-        bool: True is statevector
+        bool: True is AerProvider
     """
     if has_aer():
         return isinstance(backend.provider(), AerProvider)
+    else:
+        return False
+
+
+def is_basicaer_provider(backend):
+    """Detect whether or not backend is from BasicAer provider.
+
+    Args:
+        backend (BaseBackend): backend instance
+    Returns:
+        bool: True is BasicAer
+    """
+    return isinstance(backend.provider(), BasicAerProvider)
+
+
+def is_ibmq_provider(backend):
+    """Detect whether or not backend is from IBMQ provider.
+
+    Args:
+        backend (BaseBackend): backend instance
+    Returns:
+        bool: True is IBMQ
+    """
+    if has_ibmq():
+        return isinstance(backend.provider(), IBMQProvider)
     else:
         return False
 
@@ -109,20 +133,6 @@ def is_local_backend(backend):
     return backend.configuration().local
 
 
-def is_ibmq_provider(backend):
-    """Detect whether or not backend is from IBMQ provider.
-
-    Args:
-        backend (BaseBackend): backend instance
-    Returns:
-        bool: True is statevector
-    """
-    if has_ibmq():
-        return isinstance(backend.provider(), IBMQProvider)
-    else:
-        return False
-
-
 def get_aer_backend(backend_name):
     providers = ['qiskit.Aer', 'qiskit.BasicAer']
     for provider in providers:
@@ -147,7 +157,6 @@ def get_backends_from_provider(provider_name):
     """
     provider_object = _load_provider(provider_name)
     if has_ibmq() and isinstance(provider_object, IBMQProvider):
-        from qiskit_aqua_cmd import Preferences
         preferences = Preferences()
         url = preferences.get_url()
         token = preferences.get_token()
@@ -187,7 +196,6 @@ def get_backend_from_provider(provider_name, backend_name):
     backend = None
     provider_object = _load_provider(provider_name)
     if has_ibmq() and isinstance(provider_object, IBMQProvider):
-        from qiskit_aqua_cmd import Preferences
         preferences = Preferences()
         url = preferences.get_url()
         token = preferences.get_token()
@@ -245,9 +253,10 @@ def get_provider_from_backend(backend):
     Raises:
         ImportError: Failed to find provider
     """
-    known_providers = {'AerProvider': 'qiskit.Aer',
+    known_providers = {
                        'BasicAerProvider': 'qiskit.BasicAer',
-                       'IBMQProvider': 'qiskit.IBMQ'
+                       'AerProvider': 'qiskit.Aer',
+                       'IBMQProvider': 'qiskit.IBMQ',
                        }
     if isinstance(backend, BaseBackend):
         provider = backend.provider()
@@ -286,7 +295,6 @@ def _load_provider(provider_name):
 
     if has_ibmq() and isinstance(provider_object, IBMQProvider):
         # enable IBMQ account
-        from qiskit_aqua_cmd import Preferences
         preferences = Preferences()
         enable_ibmq_account(preferences.get_url(), preferences.get_token(), preferences.get_proxies({}))
 

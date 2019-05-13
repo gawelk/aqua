@@ -1,30 +1,26 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2018 IBM.
+# This code is part of Qiskit.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# (C) Copyright IBM 2018, 2019.
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# =============================================================================
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
 
 import math
 import itertools
 import numpy as np
 import unittest
-
 from parameterized import parameterized
+from qiskit.aqua import QuantumInstance
 from qiskit.aqua.components.oracles import TruthTableOracle
 from qiskit.aqua.algorithms import Simon
-from qiskit.aqua import get_aer_backend, AquaError
-
+from qiskit import BasicAer
 from test.common import QiskitAquaTestCase
 
 bitmaps = [
@@ -32,15 +28,16 @@ bitmaps = [
     ['10010110', '01010101', '10000010'],
     ['01101001', '10011001', '01100110'],
 ]
-mct_modes = ['basic', 'advanced', 'noancilla']
+mct_modes = ['basic', 'basic-dirty-ancilla', 'advanced', 'noancilla']
 optimizations = ['off', 'qm-dlx']
+simulators = ['statevector_simulator', 'qasm_simulator']
 
 
 class TestSimon(QiskitAquaTestCase):
     @parameterized.expand(
-        itertools.product(bitmaps, mct_modes, optimizations)
+        itertools.product(bitmaps, mct_modes, optimizations, simulators)
     )
-    def test_simon(self, simon_input, mct_mode, optimization='off'):
+    def test_simon(self, simon_input, mct_mode, optimization, simulator):
         # find the two keys that have matching values
         nbits = int(math.log(len(simon_input[0]), 2))
         vals = list(zip(*simon_input))[::-1]
@@ -55,10 +52,11 @@ class TestSimon(QiskitAquaTestCase):
         k1, k2 = find_pair()
         hidden = np.binary_repr(k1 ^ k2, nbits)
 
-        backend = get_aer_backend('qasm_simulator')
+        backend = BasicAer.get_backend(simulator)
         oracle = TruthTableOracle(simon_input, optimization=optimization, mct_mode=mct_mode)
         algorithm = Simon(oracle)
-        result = algorithm.run(backend)
+        quantum_instance = QuantumInstance(backend)
+        result = algorithm.run(quantum_instance=quantum_instance)
         # print(result['circuit'].draw(line_length=10000))
         self.assertEqual(result['result'], hidden)
 
